@@ -1,3 +1,17 @@
+# Address
+
+- Ethereum Sepolia: 0x39e206C62799afb5Ea13840BfeCF695959EdFa9e
+
+# Scripts
+
+- Deploy to ethereum sepolia:
+
+```
+forge script script/Deployer.s.sol:Deployer --rpc-url sepolia --broadcast -vvvv
+```
+
+<hr/>
+
 # Name 
 
 <p align="center">

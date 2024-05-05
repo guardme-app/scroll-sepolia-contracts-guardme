@@ -1,18 +1,22 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import { Script, console2 } from "forge-std/Script.sol";
-import { Counter } from "src/Counter.sol";
+import { Script, console } from "forge-std/Script.sol";
+import { GuardMe } from "src/GuardMe.sol";
 
 contract Deployer is Script {
     function run() public {
-        vm.startBroadcast();
+        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
+        vm.startBroadcast(deployerPrivateKey);
         deploy();
         vm.stopBroadcast();
     }
 
-    function deploy() public returns (Counter) {
-        Counter counter = new Counter();
-        return counter;
+    function deploy() public returns (GuardMe) {
+        GuardMe guardMe = new GuardMe();
+
+        console.log('GuardMe deployed at address: ', address(guardMe));
+
+        return guardMe;
     }
 }
