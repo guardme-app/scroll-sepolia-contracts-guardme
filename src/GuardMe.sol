@@ -10,7 +10,6 @@ contract GuardMe {
         Plan plan;
         address user;
         uint256 finishDate;
-        uint256 amountTheUserPaid;
         uint256 status;
     }
 
@@ -24,13 +23,13 @@ contract GuardMe {
     mapping(address user => PlanByUser activePlan) activePlanByUser;
     mapping(address user => PlanByUser activePlan) activeRequestByUser;
 
-    event LogBuyPlan(address indexed user, uint256 indexed planId, uint256 amount);
-    event LogDeletePlan(address indexed user, uint256 indexed planId, uint256 amount);
-    event LogRequestWithdraw(address indexed user, uint256 indexed planId, uint256 amount);
+    event LogBuyPlan(address indexed user, uint256 indexed planId);
+    event LogDeletePlan(address indexed user, uint256 indexed planId);
+    event LogRequestWithdraw(address indexed user, uint256 indexed planId);
     event LogAuthorizeWithdraw(
-        address indexed user, uint256 indexed planId, uint256 amount, address ownerWhoAuthorized
+        address indexed user, uint256 indexed planId, address ownerWhoAuthorized
     );
-    event LogWithdraw(address indexed user, uint256 indexed planId, uint256 amount);
+    event LogWithdraw(address indexed user, uint256 indexed planId);
 
     error InvalidPlandId();
     error InvalidAddress();
@@ -42,7 +41,11 @@ contract GuardMe {
         owner = msg.sender;
     }
 
-    function buyPlan(uint256 id) public payable {
+    function test() public pure returns (string memory) {
+        return "Hello World!";
+    }
+
+    function buyPlan(uint256 id) public {
         if (id < 0) {
             revert InvalidPlandId();
         }
@@ -51,21 +54,16 @@ contract GuardMe {
             revert InvalidAddress();
         }
 
-        if (msg.value <= 0) {
-            revert InvalidValue();
-        }
-
         PlanByUser memory newPlan = PlanByUser({
             plan: Plan({ id: ++purchasedPlans}),
             user: msg.sender,
             finishDate: block.timestamp + 365 days,
-            amountTheUserPaid: msg.value,
             status: 1
         });
 
         activePlanByUser[msg.sender] = newPlan;
 
-        emit LogBuyPlan(msg.sender, id, msg.value);
+        emit LogBuyPlan(msg.sender, id);
     }
 
     function cancelPlan() public {
@@ -74,11 +72,9 @@ contract GuardMe {
         verifyAddress(msg.sender);
         verifyIfUserHasActiveRequest(activePlanByUser[msg.sender]);
 
-        uint256 amountTheUserPaid = activePlanByUser[msg.sender].amountTheUserPaid;
-
         delete activePlanByUser[msg.sender];
 
-        emit LogDeletePlan(msg.sender, planId, amountTheUserPaid);
+        emit LogDeletePlan(msg.sender, planId);
     }
 
     function requestWithdraw() public {
@@ -87,10 +83,11 @@ contract GuardMe {
         verifyAddress(msg.sender);
         verifyIfUserHasActiveRequest(activePlanByUser[msg.sender]);
 
-        activePlanByUser[msg.sender].status = 2;
+        // Immediately release withdrawal for testing
+        activePlanByUser[msg.sender].status = 3;
         activeRequestByUser[msg.sender] = activePlanByUser[msg.sender];
 
-        emit LogRequestWithdraw(msg.sender, planId, activePlanByUser[msg.sender].amountTheUserPaid);
+        emit LogRequestWithdraw(msg.sender, planId);
     }
 
     function authorizeWithdraw(address userWhoRequested) public {
@@ -101,22 +98,16 @@ contract GuardMe {
         emit LogAuthorizeWithdraw(
             userWhoRequested,
             activePlanByUser[userWhoRequested].plan.id,
-            activePlanByUser[userWhoRequested].amountTheUserPaid,
             msg.sender
         );
     }
 
-    function withdraw() public payable { 
-        address payable userWhoReceive = payable(msg.sender);
-
-        uint256 amountToWithdraw = activePlanByUser[msg.sender].amountTheUserPaid;
+    function withdraw() public { 
 
         delete activePlanByUser[msg.sender];
         delete activeRequestByUser[msg.sender];
 
-        userWhoReceive.transfer(amountToWithdraw);
-
-        emit LogWithdraw(msg.sender, activePlanByUser[msg.sender].plan.id, amountToWithdraw);
+        emit LogWithdraw(msg.sender, activePlanByUser[msg.sender].plan.id);
     }
 
     function verifyAddress(address user) private pure {
