@@ -1,13 +1,22 @@
 # Address
 
-- Ethereum Sepolia: 0x8ab2FB071FEC458318013a719Dd28bC81c08B1f9
+- Scroll Sepolia: 0xf3BA111478a1c12bd6Cf36245240eAC3eE0cc36e
 
 # Scripts
 
-- Deploy to ethereum sepolia:
+- Deploy to Scroll Sepolia:
 
 ```
-forge script script/Deployer.s.sol:Deployer --rpc-url sepolia --broadcast -vvvv
+forge script script/Deployer.s.sol:Deployer --rpc-url https://sepolia-rpc.scroll.io/ --broadcast -vvvv
+```
+
+- Verify contract on Scroll Sepolia:
+
+```
+forge verify-contract 0xf3BA111478a1c12bd6Cf36245240eAC3eE0cc36e GuardMe \
+  --verifier-url https://api-sepolia.scrollscan.com/api \
+  --etherscan-api-key <API_KEY>
+
 ```
 
 <hr/>
